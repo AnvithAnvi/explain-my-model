@@ -23,3 +23,4 @@ This Streamlit web app lets you upload any CSV dataset, select a target column, 
 5. Explore visual explanations powered by SHAP
 
 ---
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live-blue?logo=streamlit)](https://explain-my-model.streamlit.app/)
