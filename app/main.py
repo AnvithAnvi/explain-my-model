@@ -120,7 +120,11 @@ if uploaded_file is not None:
 
             st.markdown("#### 🌍 SHAP Summary Plot")
             fig_summary = plt.figure()
-            shap.summary_plot(shap_values, X_test, show=False)
+            if hasattr(shap_values, "values"):
+                shap.summary_plot(shap_values.values, X_test, show=False)
+            else:
+                shap.summary_plot(shap_values, X_test, show=False)
+
             st.pyplot(fig_summary)
             plt.clf()
 
