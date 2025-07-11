@@ -50,7 +50,7 @@ def get_csv_download_link(file_path, label="📥 Download Sample CSV"):
 
 # Show link
 try:
-    get_csv_download_link("data/heart.csv")
+    get_csv_download_link("data/heart copy.csv")
 except FileNotFoundError:
     st.info("Sample dataset will appear here when available.")
 
