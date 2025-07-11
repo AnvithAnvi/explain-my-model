@@ -41,7 +41,7 @@ uploaded_file = st.file_uploader("📁 Upload your CSV file", type=["csv"])
 
 import base64
 
-def get_csv_download_link(file_path, label="📥 Download Sample CSV"):
+def get_csv_download_link(file_path, label="📥  Download Sample CSV"):
     with open(file_path, "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
@@ -50,7 +50,7 @@ def get_csv_download_link(file_path, label="📥 Download Sample CSV"):
 
 # Show link
 try:
-    get_csv_download_link("data/heart copy.csv")
+    get_csv_download_link("data/heart (1).csv")
 except FileNotFoundError:
     st.info("Sample dataset will appear here when available.")
 
