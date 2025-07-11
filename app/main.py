@@ -72,9 +72,8 @@ if uploaded_file is not None:
     with st.expander("❓ What is a target column?"):
         st.markdown("""
         A **target column** is what you want the model to predict.
-        - If it's a category or label (e.g., `0` for No Disease, `1` for Disease), it's a **classification** task.
-        - If it's a continuous number (e.g., `age`, `price`, `cholesterol level`), it's a **regression** task.
-
+        - Classification → categories (e.g. 0/1, Yes/No)
+        - Regression → continuous numbers (e.g. price)
         Always ask yourself: *What am I trying to predict?*
         """)
 
