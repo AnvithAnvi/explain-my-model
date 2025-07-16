@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -16,39 +17,32 @@ st.markdown("Upload a CSV, select a target, train a model, and get SHAP-based ex
 
 # Preprocessing function
 def clean_and_preprocess(df, target_column, z_thresh=3):
-    # 1️⃣ keep target, split X / y first
+    df = df.dropna(thresh=0.8 * len(df), axis=1)
+    df = df.apply(pd.to_numeric, errors='coerce')
+    df = df.loc[:, df.nunique() > 1]
+    df = df[df[target_column].notna()]
+
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
-    # 2️⃣ numeric + categorical separation
-    numeric_cols = X.select_dtypes(include=["number"]).columns
-    cat_cols     = X.select_dtypes(exclude=["number"]).columns
+    if X.select_dtypes(include=np.number).shape[1] > 0:
+        mask = (np.abs(zscore(X.select_dtypes(include=np.number), nan_policy='omit')) < z_thresh).all(axis=1)
+        X = X[mask]
+        y = y[mask]
 
-    # 3️⃣ one-hot encode categoricals
-    X_cat = pd.get_dummies(X[cat_cols], drop_first=True)
-    X_num = X[numeric_cols].apply(pd.to_numeric, errors="coerce")
+    X = X.fillna(X.median(numeric_only=True))
 
-    # 4️⃣ combine
-    X = pd.concat([X_num, X_cat], axis=1)
-
-    # 5️⃣ outlier removal on numeric only
-    if len(numeric_cols) > 0:
-        mask = (np.abs(zscore(X[numeric_cols], nan_policy="omit")) < z_thresh).all(axis=1)
-        X, y = X[mask], y[mask]
-
-    # 6️⃣ impute + scale numeric
-    X[numeric_cols] = X[numeric_cols].fillna(X[numeric_cols].median())
     scaler = StandardScaler()
-    X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
+    X_scaled = scaler.fit_transform(X)
+    X = pd.DataFrame(X_scaled, columns=X.columns)
 
     return X, y
-
 
 uploaded_file = st.file_uploader("📁 Upload your CSV file", type=["csv"])
 
 import base64
 
-def get_csv_download_link(file_path, label="📥  Download Sample CSV"):
+def get_csv_download_link(file_path, label="📥 Download Sample CSV"):
     with open(file_path, "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
@@ -57,7 +51,7 @@ def get_csv_download_link(file_path, label="📥  Download Sample CSV"):
 
 # Show link
 try:
-    get_csv_download_link("data/heart (1).csv")
+    get_csv_download_link("data/heart copy.csv")
 except FileNotFoundError:
     st.info("Sample dataset will appear here when available.")
 
@@ -72,8 +66,9 @@ if uploaded_file is not None:
     with st.expander("❓ What is a target column?"):
         st.markdown("""
         A **target column** is what you want the model to predict.
-        - Classification → categories (e.g. 0/1, Yes/No)
-        - Regression → continuous numbers (e.g. price)
+        - If it's a category or label (e.g., `0` for No Disease, `1` for Disease), it's a **classification** task.
+        - If it's a continuous number (e.g., `age`, `price`, `cholesterol level`), it's a **regression** task.
+
         Always ask yourself: *What am I trying to predict?*
         """)
 
@@ -120,11 +115,7 @@ if uploaded_file is not None:
 
             st.markdown("#### 🌍 SHAP Summary Plot")
             fig_summary = plt.figure()
-            if hasattr(shap_values, "values"):
-                shap.summary_plot(shap_values.values, X_test, show=False)
-            else:
-                shap.summary_plot(shap_values, X_test, show=False)
-
+            shap.summary_plot(shap_values, X_test, show=False)
             st.pyplot(fig_summary)
             plt.clf()
 
